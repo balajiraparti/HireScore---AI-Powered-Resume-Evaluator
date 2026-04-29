@@ -1,0 +1,58 @@
+from fastapi import FastAPI, UploadFile, Path, Form, File
+# from uuid import uuid4
+from .utils.file import save_to_disk
+from .db.collections.files import files_collection, FileSchema
+from .queue.q import q
+from .queue.workers import process_file
+from bson import ObjectId
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+# origins = [
+   
+#     "http://localhost:3001",
+# ]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/")
+def hello():
+    return {"status": "hello"}
+
+
+@app.get("/{id}")
+async def get_file_by_id(id: str = Path(..., description="id of the file")):
+    db_file = await files_collection.find_one({"_id": ObjectId(id)})
+    return {
+        "_id": str(db_file["_id"]),
+        "name": db_file["name"],
+        "status": db_file["status"],
+        "JD": db_file["job_description"],
+        "Strength": db_file["strength"] if "strength" in db_file else None,
+         # flake8: noqa
+        "Weaknesses": db_file["weaknesses"] if "weaknesses" in db_file else None, 
+        "Improvements": db_file["improvements"] if "improvements" in db_file else None,
+        "Score": db_file['score'] if "score" in db_file else None
+    }
+      
+      
+@app.post("/upload")
+async def file_upload(file: UploadFile = File(...), JD: str= Form(...)):
+    db_file = await files_collection.insert_one(document=FileSchema(
+        name=file.filename,
+        status="saving",
+        job_description=JD))
+    file_path = f"/mnt/uploads/{str(db_file.inserted_id)}/{file.filename}"
+    await save_to_disk(file=await file.read(), path=file_path)
+    q.enqueue(process_file, str(db_file.inserted_id), file_path)
+    await files_collection.update_one({"_id": db_file.inserted_id}, {
+        "$set": {
+            "status": "queued"
+        }
+    })
+    return {"file_id": str(db_file.inserted_id)}

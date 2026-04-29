@@ -1,0 +1,5 @@
+__pycache__/
+.env
+rag/
+node_modules/
+.next/
