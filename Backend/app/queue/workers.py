@@ -96,7 +96,7 @@ async def process_file(id: str, file_path: str):
     def jd_rewrite(state:State):
         JD=state.get("JD")
         
-        llm=ChatOpenAI(model="gpt-4o",temperature=0)
+        llm=ChatGroq(model="openai/gpt-oss-120b",temperature=0)
         messages =ChatPromptTemplate.from_messages( [
         (
             "system",
@@ -126,7 +126,7 @@ async def process_file(id: str, file_path: str):
     def evaluation(state:State):
             JD=state.get('enhanced_jd')
             resume_description=state.get("resume_description")
-            llm=ChatOpenAI(model="gpt-4o",temperature=0)
+            llm=ChatGroq(model="openai/gpt-oss-120b",temperature=0)
             messages = ChatPromptTemplate.from_messages([
         (
             "system",

@@ -77,9 +77,7 @@ export function InputScreen({ onUploadComplete }: InputScreenProps) {
         className="text-center"
       >
         <h1 className="text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-indigo-500 to-sky-400 md:text-7xl lg:text-8xl">
-          Resume
-          <br />
-          Evaluator
+          HireScore
         </h1>
         <p className="mt-4 text-lg text-slate-400 leading-relaxed max-w-2xl mx-auto">
           Upload your resume and paste the job description to get AI-powered insights on how well your profile matches the role.
